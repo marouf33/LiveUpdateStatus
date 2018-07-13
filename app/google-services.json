@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "937816333975",
+    "firebase_url": "https://live-update-1568d.firebaseio.com",
+    "project_id": "live-update-1568d",
+    "storage_bucket": "live-update-1568d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:937816333975:android:990ab27a8ab7a9ae",
+        "android_client_info": {
+          "package_name": "maroufb.com.liveupdatestatus"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "937816333975-2s968qseij0h3hape1gfam8f8sijbhnm.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "maroufb.com.liveupdatestatus",
+            "certificate_hash": "f3862a65c65af8ca609d5e3c787d876b197307d2"
+          }
+        },
+        {
+          "client_id": "937816333975-vbjas9qeh593jqhepjqt2bqlqr6ltajp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZsi7niGSldl9pnKztKmGMUEAkwaWGJFI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "937816333975-vbjas9qeh593jqhepjqt2bqlqr6ltajp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
