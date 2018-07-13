@@ -28,8 +28,9 @@
         <activity
             android:name=".PostActivity"
             android:parentActivityName=".HomeActivity" />
-        <activity android:name=".ProfileActivity"
-            android:parentActivityName=".HomeActivity"></activity>
+        <activity
+            android:name=".ProfileActivity"
+            android:parentActivityName=".HomeActivity"/>
     </application>
 
 </manifest>

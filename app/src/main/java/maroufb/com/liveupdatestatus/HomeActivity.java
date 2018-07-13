@@ -148,6 +148,13 @@ public class HomeActivity extends AppCompatActivity {
             case R.id.addNewMenu:
                 gotoActivity(PostActivity.class);
                 return true;
+            case R.id.myProfileMenu:
+                Intent gotoProfile = new Intent(HomeActivity.this,ProfileActivity.class);
+                gotoProfile.putExtra("USER_ID",mAuth.getCurrentUser().getUid());
+                startActivity(gotoProfile);
+                finish();
+                return true;
+
         }
         return super.onOptionsItemSelected(item);
     }

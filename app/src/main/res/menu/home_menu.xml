@@ -8,6 +8,11 @@
         app:showAsAction="always"/>
 
     <item
+        android:title="My Profile"
+        android:id="@+id/myProfileMenu"
+        app:showAsAction="ifRoom"/>
+
+    <item
         android:title="Logout"
         android:id="@+id/logoutMenu"
         app:showAsAction="never"/>

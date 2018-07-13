@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -17,7 +18,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
@@ -26,8 +31,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.squareup.picasso.Picasso;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,6 +52,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     private DatabaseReference mUserProfileReference;
     private FirebaseUser currentUser;
+    private StorageReference mStorage;
+    private Uri mPhotoURI;
 
     private String passUserID;
 
@@ -57,6 +68,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         passUserID = getIntent().getStringExtra("USER_ID");
 
+        mStorage = FirebaseStorage.getInstance().getReference();
         mUserProfileReference = FirebaseDatabase.getInstance().getReference().child("Users").child(passUserID);
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         mUserProfileReference.addValueEventListener(new ValueEventListener() {
@@ -97,7 +109,8 @@ public class ProfileActivity extends AppCompatActivity {
                         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
                             if (ActivityCompat.shouldShowRequestPermissionRationale(getOuter(),
                                     Manifest.permission.CAMERA)) {
-                                showExplanation("Permission Needed", "Rationale", Manifest.permission.CAMERA,REQUEST_PHOTO_CAPTURE);
+                                showExplanation("Permission Needed", "We nned permission to your camera so you can take a new profile picture."
+                                        , Manifest.permission.CAMERA,REQUEST_PHOTO_CAPTURE);
                             } else {
                                 // No explanation needed; request the permission
                                 ActivityCompat.requestPermissions(getOuter(),
@@ -176,6 +189,7 @@ public class ProfileActivity extends AppCompatActivity {
     @OnClick(R.id.updateProfileButton)
     public void setUpdateButton(){
         final String userName = mUserNameEditText.getText().toString().trim();
+        //update user name
         if(!TextUtils.isEmpty(userName)) {
             UserProfileChangeRequest profileUpdates = new UserProfileChangeRequest.Builder()
                     .setDisplayName(userName)
@@ -185,16 +199,66 @@ public class ProfileActivity extends AppCompatActivity {
                 public void onSuccess(Void aVoid) {
                     Map<String,Object> updateUserNameMap = new HashMap<>();
                     updateUserNameMap.put("displayName",userName);
-                    mUserProfileReference.updateChildren(updateUserNameMap);
+                    mUserProfileReference.updateChildren(updateUserNameMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(getApplicationContext(),"Success updating name.", Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
             });
 
         }
+        //update user photo
+        updateUserPhoto(mPhotoURI);
+
 
 
     }
 
-    private void updateUserPhoto(String photoUrl){
+    private void updateUserPhoto(Uri photoUrl){
+      if(photoUrl != null) {
+          final StorageReference userImageRef = mStorage.child("userImages").child(currentUser.getUid())
+                  .child(photoUrl.getLastPathSegment());
+          userImageRef.putFile(photoUrl).continueWithTask(new Continuation<UploadTask.TaskSnapshot, Task<Uri>>() {
+              @Override
+              public Task<Uri> then(@NonNull Task<UploadTask.TaskSnapshot> task) throws Exception {
+                  if (!task.isSuccessful()) {
+                      AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+                      builder.setTitle("Error")
+                              .setMessage(task.getException().getMessage());
+                      builder.create().show();
+                      return null;
+                  }
+
+                  // Continue with the task to get the download URL
+                  return userImageRef.getDownloadUrl();
+              }
+          }).addOnCompleteListener(new OnCompleteListener<Uri>() {
+              @Override
+              public void onComplete(@NonNull Task<Uri> task) {
+
+
+                  if (task.isSuccessful()) {
+                      Uri downloadUri = task.getResult();
+                      Map<String, Object> updatePhotoMap = new HashMap<>();
+                      updatePhotoMap.put("photoUrl", downloadUri.toString());
+                      mUserProfileReference.updateChildren(updatePhotoMap).addOnSuccessListener(new OnSuccessListener<Void>() {
+                          @Override
+                          public void onSuccess(Void aVoid) {
+                              Toast.makeText(getApplicationContext(),"Success updating photo.", Toast.LENGTH_SHORT).show();
+                          }
+                      });
+                  } else {
+                      AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+                      builder.setTitle("Error")
+                              .setMessage(task.getException().getMessage());
+                      builder.create().show();
+                  }
+              }
+          });
+
+      }
 
     }
 
@@ -211,4 +275,23 @@ public class ProfileActivity extends AppCompatActivity {
         startActivityForResult(choosePhoto,REQUEST_PHOTO_PICK);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(resultCode == RESULT_OK){
+            switch (requestCode){
+                case REQUEST_PHOTO_CAPTURE:
+                    mPhotoURI = data.getData();
+                    mUserImageView.setImageURI(mPhotoURI);
+                    return;
+                case REQUEST_PHOTO_PICK:
+                    mPhotoURI = data.getData();
+                    mUserImageView.setImageURI(mPhotoURI);
+                    return;
+            }
+        }
+
+
+    }
 }
