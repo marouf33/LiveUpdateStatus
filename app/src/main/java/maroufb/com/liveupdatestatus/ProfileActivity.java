@@ -116,7 +116,7 @@ public class ProfileActivity extends AppCompatActivity {
                         if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED){
                             if (ActivityCompat.shouldShowRequestPermissionRationale(getOuter(),
                                     Manifest.permission.CAMERA)) {
-                                showExplanation("Permission Needed", "We nned permission to your camera so you can take a new profile picture."
+                                showExplanation("Permission Needed", "We need permission to your camera so you can take a new profile picture."
                                         , Manifest.permission.CAMERA,REQUEST_PHOTO_CAPTURE);
                             } else {
                                 // No explanation needed; request the permission
@@ -318,8 +318,6 @@ public class ProfileActivity extends AppCompatActivity {
                     return;
             }
         }
-
-
     }
 
 
